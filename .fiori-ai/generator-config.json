@@ -1,0 +1,31 @@
+{
+    "version": "0.2",
+    "floorplan": "FE_LROP",
+    "project": {
+        "name": "customersupportticket",
+        "targetFolder": "/home/user/projects/SupportTicketApp",
+        "title": "AI generated App customersupportticket",
+        "description": "AI generated App customersupportticket",
+        "ui5Version": "1.136.0",
+        "localUI5Version": "1.82.2",
+        "sapux": true
+    },
+    "service": {
+        "servicePath": "/odata/v4/customer-support-ticket-srv/",
+        "capService": {
+            "projectPath": "/home/user/projects/SupportTicketApp",
+            "serviceName": "customerSupportTicketSrv",
+            "serviceCdsPath": "srv/service"
+        }
+    },
+    "entityConfig": {
+        "mainEntity": {
+            "entityName": "SupportTickets"
+        }
+    },
+    "projectTemplateType": "LIST_REPORT_OBJECT_PAGE",
+    "telemetryData": {
+        "generationSourceName": "AI Headless",
+        "generationSourceVersion": "1.31.0"
+    }
+}

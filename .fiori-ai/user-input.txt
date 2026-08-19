@@ -1,0 +1,9 @@
+Generate a draft-enabled SAP Fiori elements application for a Customer Support Ticket system.
+
+Entities:
+1. SupportTicket: title, description, status (Open, In Progress, Resolved),
+ priority (Low, Medium, High), createdAt.
+2. TicketResponse: message, sentAt, author.
+Establish a 1-to-many relationship between SupportTicket and TicketResponse.
+
+Generate a List Report Page for SupportTicket with an Object Page showing related TicketResponses.

@@ -1,0 +1,139 @@
+{
+    "_version": "1.73.1",
+    "sap.app": {
+        "id": "customersupportticket",
+        "type": "application",
+        "i18n": "i18n/i18n.properties",
+        "applicationVersion": {
+            "version": "0.0.1"
+        },
+        "title": "SupportTicketAPp",
+        "description": "{{Projet bac à sable pour manipuler BAS et Joule.}}",
+        "resources": "resources.json",
+        "sourceTemplate": {
+            "id": "@sap/generator-fiori:lrop",
+            "version": "1.31.0",
+            "toolsId": "f19d79b2-a92d-40ba-b5fe-4b5643722753"
+        },
+        "dataSources": {
+            "mainService": {
+                "uri": "/odata/v4/customer-support-ticket-srv/",
+                "type": "OData",
+                "settings": {
+                    "annotations": [],
+                    "odataVersion": "4.0"
+                }
+            }
+        }
+    },
+    "sap.ui": {
+        "technology": "UI5",
+        "icons": {
+            "icon": "",
+            "favIcon": "",
+            "phone": "",
+            "phone@2": "",
+            "tablet": "",
+            "tablet@2": ""
+        },
+        "deviceTypes": {
+            "desktop": true,
+            "tablet": true,
+            "phone": true
+        }
+    },
+    "sap.ui5": {
+        "flexEnabled": true,
+        "dependencies": {
+            "minUI5Version": "1.136.0",
+            "libs": {
+                "sap.m": {},
+                "sap.ui.core": {},
+                "sap.fe.templates": {}
+            }
+        },
+        "contentDensities": {
+            "compact": true,
+            "cozy": true
+        },
+        "models": {
+            "i18n": {
+                "type": "sap.ui.model.resource.ResourceModel",
+                "settings": {
+                    "bundleName": "customersupportticket.i18n.i18n"
+                }
+            },
+            "": {
+                "dataSource": "mainService",
+                "preload": true,
+                "settings": {
+                    "operationMode": "Server",
+                    "autoExpandSelect": true,
+                    "earlyRequests": true
+                }
+            },
+            "@i18n": {
+                "type": "sap.ui.model.resource.ResourceModel",
+                "uri": "i18n/i18n.properties"
+            }
+        },
+        "resources": {
+            "css": []
+        },
+        "routing": {
+            "config": {},
+            "routes": [
+                {
+                    "pattern": ":?query:",
+                    "name": "SupportTicketsList",
+                    "target": "SupportTicketsList"
+                },
+                {
+                    "pattern": "SupportTickets({key}):?query:",
+                    "name": "SupportTicketsObjectPage",
+                    "target": "SupportTicketsObjectPage"
+                }
+            ],
+            "targets": {
+                "SupportTicketsList": {
+                    "type": "Component",
+                    "id": "SupportTicketsList",
+                    "name": "sap.fe.templates.ListReport",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/SupportTickets",
+                            "variantManagement": "Page",
+                            "initialLoad": "Enabled",
+                            "navigation": {
+                                "SupportTickets": {
+                                    "detail": {
+                                        "route": "SupportTicketsObjectPage"
+                                    }
+                                }
+                            }
+                        }
+                    }
+                },
+                "SupportTicketsObjectPage": {
+                    "type": "Component",
+                    "id": "SupportTicketsObjectPage",
+                    "name": "sap.fe.templates.ObjectPage",
+                    "options": {
+                        "settings": {
+                            "contextPath": "/SupportTickets"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "sap.fiori": {
+        "registrationIds": [],
+        "archeType": "transactional"
+    },
+    "sap.fe": {
+        "app": {
+            "enableLazyLoading": true
+        }
+    }
+}

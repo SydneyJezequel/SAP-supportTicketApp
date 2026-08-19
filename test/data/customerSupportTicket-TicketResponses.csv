@@ -1,0 +1,11 @@
+ID;ticketResponsesID;message;sentAt;author;supportTicketId;supportTickets_ID
+7a008dba-835c-4f75-9112-db2e9d7b6f21;TR001;We are looking into the email access issue.;2024-06-20T10:00:00Z;IT Support Team;ST001;982fe7c2-2abe-4fd5-b170-b525c4392703
+b792c6d0-cb4c-4edf-b4f8-871ac8a8ba75;TR002;Please provide the exact error message you received.;2024-06-19T15:00:00Z;Software Support;ST002;f585ff01-a00b-4b21-81e8-0bffa2dae59d
+965959f3-c781-4271-a9f5-db0b135c7142;TR003;Have you tried restarting the printer?;2024-06-21T09:00:00Z;Helpdesk Agent;ST003;cf3ca9de-99c6-44ea-a81c-1bb90abfe2cb
+437e740d-80cd-4043-950f-16962b4d04b8;TR004;Password has been reset, please check your email.;2024-06-18T11:30:00Z;IT Admin;ST004;06b7131f-889f-4a16-9daf-53decf4964a9
+21ec39d3-2008-48fe-855c-f4782e86339b;TR005;Network team is investigating the connectivity drops.;2024-06-20T14:00:00Z;Network Engineer;ST005;ff9537ab-1b87-4e88-be62-70c214c24634
+e136f126-4cf4-4fa9-9dae-ad89813e54bd;TR006;Please update the app to the latest version and try again.;2024-06-21T10:30:00Z;App Support;ST006;78a3d084-9382-46ac-8edb-ef993f83f289
+8c9293c3-68cd-4b3f-9428-3949448a5cc8;TR007;We optimized your system settings to improve performance.;2024-06-17T17:00:00Z;Tech Specialist;ST007;65d2139e-ef0e-4e87-85a2-9d0dc958724f
+1fc7687a-bb26-489e-b2f6-f158bfc35c81;TR008;Spam filter rules have been updated to block unwanted emails.;2024-06-19T10:15:00Z;Email Admin;ST008;08e43bc2-3a21-4e84-8520-6467664aa4ed
+8b30c1e9-78ae-44d9-9492-8acfaf2fc319;TR009;VPN server is currently down, working on a fix.;2024-06-21T08:00:00Z;Network Support;ST009;d6bbbb9e-878c-472a-b4b5-9e818e178c2a
+cd681b58-28cb-4923-a1a2-5519e793bf4c;TR010;Backup process was restarted and completed successfully.;2024-06-19T00:00:00Z;Backup Admin;ST010;cba5d49f-5c00-412b-8aac-c74f062ced46

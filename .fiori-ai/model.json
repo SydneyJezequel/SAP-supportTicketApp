@@ -1,0 +1,222 @@
+{
+    "namespace": "customerSupportTicket",
+    "entities": [
+        {
+            "name": "SupportTickets",
+            "label": "Ticket",
+            "labelPlural": "Tickets",
+            "associations": [
+                {
+                    "name": "TicketResponses",
+                    "target": "TicketResponses",
+                    "multiplicity": "many",
+                    "backAssociation": "supportTickets"
+                }
+            ],
+            "elements": [
+                {
+                    "name": "ID",
+                    "type": "UUID",
+                    "key": true,
+                    "label": ""
+                },
+                {
+                    "name": "supportTicketsID",
+                    "type": "String(50)",
+                    "label": "Id",
+                    "additionalInfo": "Unique identifier for SupportTicket, semantic key to uniquely identify the instance",
+                    "essentialElement": true,
+                    "semanticKey": true
+                },
+                {
+                    "name": "title",
+                    "type": "String(100)",
+                    "label": "Title",
+                    "additionalInfo": "Title of the support ticket",
+                    "key": false,
+                    "essentialElement": true
+                },
+                {
+                    "name": "description",
+                    "type": "String(255)",
+                    "label": "Description",
+                    "additionalInfo": "Detailed description of the support ticket",
+                    "key": false,
+                    "essentialElement": false
+                },
+                {
+                    "name": "status",
+                    "type": "String(20)",
+                    "label": "Status",
+                    "additionalInfo": "Status of the ticket: Open, In Progress, Resolved",
+                    "key": false,
+                    "essentialElement": true
+                },
+                {
+                    "name": "priority",
+                    "type": "String(20)",
+                    "label": "Priority",
+                    "additionalInfo": "Priority of the ticket: Low, Medium, High",
+                    "key": false,
+                    "essentialElement": true
+                },
+                {
+                    "name": "createdAt",
+                    "type": "DateTime",
+                    "label": "Created At",
+                    "additionalInfo": "Date and time when the ticket was created",
+                    "key": false,
+                    "essentialElement": true
+                }
+            ]
+        },
+        {
+            "name": "TicketResponses",
+            "label": "Response",
+            "labelPlural": "Responses",
+            "associations": [
+                {
+                    "name": "supportTickets",
+                    "target": "SupportTickets",
+                    "multiplicity": "one",
+                    "isComposition": false
+                }
+            ],
+            "elements": [
+                {
+                    "name": "ID",
+                    "type": "UUID",
+                    "key": true,
+                    "label": ""
+                },
+                {
+                    "name": "ticketResponsesID",
+                    "type": "String(50)",
+                    "label": "Id",
+                    "additionalInfo": "Unique identifier for TicketResponse, semantic key to uniquely identify the instance",
+                    "essentialElement": true,
+                    "semanticKey": true
+                },
+                {
+                    "name": "message",
+                    "type": "String(255)",
+                    "label": "Message",
+                    "additionalInfo": "Message content of the ticket response",
+                    "key": false,
+                    "essentialElement": true
+                },
+                {
+                    "name": "sentAt",
+                    "type": "DateTime",
+                    "label": "Sent At",
+                    "additionalInfo": "Date and time when the response was sent",
+                    "key": false,
+                    "essentialElement": true
+                },
+                {
+                    "name": "author",
+                    "type": "String(100)",
+                    "label": "Author",
+                    "additionalInfo": "Author of the ticket response",
+                    "key": false,
+                    "essentialElement": true
+                },
+                {
+                    "name": "supportTicketId",
+                    "type": "String(50)",
+                    "label": "Support Ticket Id",
+                    "additionalInfo": "Foreign key referencing the related SupportTicket",
+                    "key": false,
+                    "essentialElement": true
+                }
+            ]
+        }
+    ],
+    "service": {
+        "name": "customerSupportTicketSrv",
+        "path": "srv/service.cds"
+    },
+    "applications": [
+        {
+            "pages": [
+                {
+                    "type": "ListReport",
+                    "entityType": "SupportTickets",
+                    "listReportContent": {
+                        "loadDataOnAppLaunch": "Enabled",
+                        "filters": [
+                            "status",
+                            "priority",
+                            "createdAt"
+                        ],
+                        "tables": [
+                            {
+                                "title": "Support Tickets",
+                                "id": "SupportTicketsTable",
+                                "baseEntityType": "SupportTickets",
+                                "columns": [
+                                    "supportTicketsID",
+                                    "title",
+                                    "status",
+                                    "priority",
+                                    "createdAt"
+                                ]
+                            }
+                        ]
+                    }
+                },
+                {
+                    "type": "ObjectPage",
+                    "entityType": "SupportTickets",
+                    "objectPageContent": {
+                        "tableSectionAssociations": [
+                            "TicketResponses"
+                        ],
+                        "sections": [
+                            {
+                                "title": "Support Ticket Details",
+                                "id": "supportTicketDetails",
+                                "fields": [
+                                    "title",
+                                    "description",
+                                    "status",
+                                    "priority",
+                                    "createdAt"
+                                ]
+                            },
+                            {
+                                "title": "Ticket Responses",
+                                "id": "ticketResponsesSection",
+                                "isTableSection": true,
+                                "fields": [
+                                    "TicketResponses/ticketResponsesID",
+                                    "TicketResponses/message",
+                                    "TicketResponses/sentAt",
+                                    "TicketResponses/author"
+                                ]
+                            }
+                        ],
+                        "tabs": [
+                            {
+                                "id": "detailsTab",
+                                "title": "Details",
+                                "subsections": [
+                                    "supportTicketDetails"
+                                ]
+                            },
+                            {
+                                "id": "responsesTab",
+                                "title": "Responses",
+                                "subsections": [
+                                    "ticketResponsesSection"
+                                ]
+                            }
+                        ],
+                        "chartSections": []
+                    }
+                }
+            ],
+            "name": "customerSupportTicket"
+        }
+    ]
+}

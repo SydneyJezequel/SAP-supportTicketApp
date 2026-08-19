@@ -1,0 +1,1002 @@
+2026-08-19T20:05:29.342Z [info] Project generation uses model: "gpt-4.1-mini", version: "latest"
+2026-08-19T20:05:29.343Z [info] 1/8: Generate CAP model using LLM
+2026-08-19T20:05:33.418Z [info] 
+==========LLM call for step "extractAppSkeleton":==========
+You help the user building a Fiori Elements application described in the user input.
+
+A Fiori Elements application typically starts with a ListReport page showing the data of the base entity of the application in a table.
+Details of a specific table row are shown in the ObjectPage. This first ObjectPage is therefore based on the base entity of the application.
+An ObjectPage can contain one or more table sections based on to-many associations of its entity type.
+The details of a table section row can be shown in an another ObjectPage based on the associations target entity.
+
+Your task is to find the entities (with their to-many associations) as well as the ObjectPages (with the to-many associations they use in table sections) described in the user input below.
+
+You must format your output as a JSON value that adheres to a given "JSON Schema" instance.
+
+"JSON Schema" is a declarative language that allows you to annotate and validate JSON documents.
+
+For example, the example "JSON Schema" instance {{"properties": {{"foo": {{"description": "a list of test words", "type": "array", "items": {{"type": "string"}}}}}}, "required": ["foo"]}}
+would match an object with one required property, "foo". The "type" property specifies "foo" must be an "array", and the "description" property semantically describes it as "a list of test words". The items within "foo" must be strings.
+Thus, the object {{"foo": ["bar", "baz"]}} is a well-formatted instance of this example "JSON Schema". The object {{"properties": {{"foo": ["bar", "baz"]}}}} is not well-formatted.
+
+Your output will be parsed and type-checked according to the provided schema instance, so make sure all fields in your output match the schema exactly and there are no trailing commas!
+
+Here is the JSON Schema instance your output must adhere to. Include the enclosing markdown codeblock:
+```json
+{
+  "type": "object",
+  "properties": {
+    "entities": {
+      "type": "array",
+      "description": "Define all entities and their to-many associations; entity properties will be determined later",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "UpperCamelCase, no spaces, plural, e.g. 'Orders'"
+          },
+          "label": {
+            "type": "string",
+            "description": "max two words, singular"
+          },
+          "associations": {
+            "type": "array",
+            "description": "Define to-many associations between entities",
+            "items": {
+              "type": "object",
+              "properties": {
+                "name": {
+                  "type": "string"
+                },
+                "target": {
+                  "type": "string",
+                  "description": "Points to existing entity, value is entities.name"
+                },
+                "nameForReverseAssociation": {
+                  "type": "string",
+                  "description": "Name of the reverse to-one association in the target entity; required if target entity is same as source entity"
+                },
+                "multiplicity": {
+                  "type": "string",
+                  "enum": [
+                    "many",
+                    "one"
+                  ],
+                  "description": "Cardinality of the association"
+                }
+              },
+              "required": [
+                "name",
+                "target",
+                "multiplicity"
+              ],
+              "additionalProperties": false
+            }
+          },
+          "labelPlural": {
+            "type": "string"
+          }
+        },
+        "required": [
+          "name",
+          "label",
+          "associations",
+          "labelPlural"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "baseEntity": {
+      "type": "string",
+      "description": "base entity of ListReport page (if present) and first ObjectPage"
+    },
+    "noListReportPage": {
+      "type": "boolean",
+      "description": "true: no ListReport page will generated, e.g. for applications which start with an (input enabled) Object Page to enter data"
+    },
+    "objectPages": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "entityType": {
+            "type": "string",
+            "description": "Entity that the ObjectPage is based on, the first ObjectPage is always based on base entity. There can at most be a single ObjectPage per entityType"
+          },
+          "tableSectionsAssociations": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "to-many associations of page entity for table sections shown in the ObjectPage"
+          }
+        },
+        "required": [
+          "entityType"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "namespace": {
+      "type": "string",
+      "description": "lowerCamelCase, no spaces allowed"
+    },
+    "applicationName": {
+      "type": "string",
+      "description": "lowerCamelCase, no spaces allowed"
+    },
+    "userInputKind": {
+      "enum": [
+        "UserInterfaceFirst",
+        "DataModelFirst"
+      ],
+      "description": "use 'UserInterfaceFirst' if User input describes the app based on the user interface, i.e. how List Report and Object Pages should look like; use 'DataModelFirst' if User input describes the app based on its data model, i.e. its entities, their elements and associations"
+    }
+  },
+  "required": [
+    "entities",
+    "baseEntity",
+    "objectPages",
+    "namespace",
+    "applicationName",
+    "userInputKind"
+  ],
+  "additionalProperties": false
+}
+```
+
+Output ONLY the json contents and try to be as accurate as comprehensive as possible.
+
+<UserInput>
+Generate a draft-enabled SAP Fiori elements application for a Customer Support Ticket system.
+
+Entities:
+1. SupportTicket: title, description, status (Open, In Progress, Resolved),
+ priority (Low, Medium, High), createdAt.
+2. TicketResponse: message, sentAt, author.
+Establish a 1-to-many relationship between SupportTicket and TicketResponse.
+
+Generate a List Report Page for SupportTicket with an Object Page showing related TicketResponses.
+</UserInput>
+
+----------Response:----------
+```json
+{
+  "entities": [
+    {
+      "name": "SupportTickets",
+      "label": "Ticket",
+      "labelPlural": "Tickets",
+      "associations": [
+        {
+          "name": "TicketResponses",
+          "target": "TicketResponses",
+          "multiplicity": "many"
+        }
+      ]
+    },
+    {
+      "name": "TicketResponses",
+      "label": "Response",
+      "labelPlural": "Responses",
+      "associations": []
+    }
+  ],
+  "baseEntity": "SupportTickets",
+  "noListReportPage": false,
+  "objectPages": [
+    {
+      "entityType": "SupportTickets",
+      "tableSectionsAssociations": [
+        "TicketResponses"
+      ]
+    }
+  ],
+  "namespace": "customerSupportTicket",
+  "applicationName": "customerSupportTicket",
+  "userInputKind": "UserInterfaceFirst"
+}
+```
+2026-08-19T20:05:33.420Z [info] Step "switchBasedOnAppSkeleton": case 0 blocked! Evaluation details:
+ - JSONPath "$.model.applications[0].pages[0]" : [{"type":"ListReport","entityType":"SupportTickets"}]
+2026-08-19T20:05:33.420Z [info] Step "switchBasedOnAppSkeleton": case 1 blocked! Evaluation details:
+ - JSONPath "$.model.applications[0].pages[0].type" : ["ListReport"]
+2026-08-19T20:05:33.421Z [info] Step "switchBasedOnAppSkeleton": case 2 passed! Evaluation details:
+ - JSONPath "$.userInput.imageCount" : [0]
+2026-08-19T20:05:33.421Z [info] Step "runDataModelFirst": workflow "givenSkeletonExtractDataModelFirst" started
+"
+2026-08-19T20:05:44.855Z [info] 
+==========LLM call for step "extractEntitiesProperties":==========
+You help the user refining the DataModel for a Fiori Elements application described in the user input.
+
+The DataModel consists of the following entities and associations:
+- entity "SupportTickets" (with to-many associations to "TicketResponses")
+- entity "TicketResponses" (with to-one association to "SupportTickets")
+
+Your task is to find the properties for each entity.
+
+You must format your output as a JSON value that adheres to a given "JSON Schema" instance.
+
+"JSON Schema" is a declarative language that allows you to annotate and validate JSON documents.
+
+For example, the example "JSON Schema" instance {{"properties": {{"foo": {{"description": "a list of test words", "type": "array", "items": {{"type": "string"}}}}}}, "required": ["foo"]}}
+would match an object with one required property, "foo". The "type" property specifies "foo" must be an "array", and the "description" property semantically describes it as "a list of test words". The items within "foo" must be strings.
+Thus, the object {{"foo": ["bar", "baz"]}} is a well-formatted instance of this example "JSON Schema". The object {{"properties": {{"foo": ["bar", "baz"]}}}} is not well-formatted.
+
+Your output will be parsed and type-checked according to the provided schema instance, so make sure all fields in your output match the schema exactly and there are no trailing commas!
+
+Here is the JSON Schema instance your output must adhere to. Include the enclosing markdown codeblock:
+```json
+{
+  "type": "object",
+  "properties": {
+    "elements": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "entityName": {
+            "type": "string"
+          },
+          "name": {
+            "type": "string",
+            "description": "camelCase for CAP and strict PascalCase for RAP, no spaces"
+          },
+          "type": {
+            "type": "string",
+            "description": "Allowed values: String(50), Boolean, Integer, Decimal, Double, Date, Time, DateTime, Timestamp; String length can vary - i.e. String(20)"
+          },
+          "key": {
+            "type": "boolean",
+            "description": "max. one optional key per entity, only if this element is a semantic key and can uniquely identify the instance"
+          },
+          "isAmount": {
+            "type": "boolean",
+            "description": "true if element has semantic type amount or price"
+          },
+          "isQuantity": {
+            "type": "boolean",
+            "description": "Set to true only if the element represents a measurable quantity that requires or can have a unit of measure (e.g., weight, length, duration). Do not use for simple integer counts"
+          },
+          "essentialElement": {
+            "type": "boolean",
+            "description": "'true' only if element is marked as essential'"
+          },
+          "additionalInfo": {
+            "type": "string",
+            "description": "All additional information from user input, e.g. user description, example values; also consider referenced parts in the user input"
+          }
+        },
+        "required": [
+          "entityName",
+          "name",
+          "type",
+          "additionalInfo"
+        ],
+        "additionalProperties": false
+      },
+      "description": "At least 5 realistic elements (unless explicitly specified)"
+    }
+  },
+  "required": [
+    "elements"
+  ],
+  "additionalProperties": false
+}
+```
+
+Output ONLY the json contents and try to be as accurate as comprehensive as possible.
+
+<UserInput>
+Generate a draft-enabled SAP Fiori elements application for a Customer Support Ticket system.
+
+Entities:
+1. SupportTicket: title, description, status (Open, In Progress, Resolved),
+ priority (Low, Medium, High), createdAt.
+2. TicketResponse: message, sentAt, author.
+Establish a 1-to-many relationship between SupportTicket and TicketResponse.
+
+Generate a List Report Page for SupportTicket with an Object Page showing related TicketResponses.
+</UserInput>
+
+----------Response:----------
+```json
+{
+  "elements": [
+    {
+      "entityName": "SupportTickets",
+      "name": "id",
+      "type": "String(50)",
+      "key": true,
+      "essentialElement": true,
+      "isAmount": false,
+      "isQuantity": false,
+      "additionalInfo": "Unique identifier for SupportTicket, semantic key to uniquely identify the instance"
+    },
+    {
+      "entityName": "SupportTickets",
+      "name": "title",
+      "type": "String(100)",
+      "key": false,
+      "essentialElement": true,
+      "isAmount": false,
+      "isQuantity": false,
+      "additionalInfo": "Title of the support ticket"
+    },
+    {
+      "entityName": "SupportTickets",
+      "name": "description",
+      "type": "String(500)",
+      "key": false,
+      "essentialElement": false,
+      "isAmount": false,
+      "isQuantity": false,
+      "additionalInfo": "Detailed description of the support ticket"
+    },
+    {
+      "entityName": "SupportTickets",
+      "name": "status",
+      "type": "String(20)",
+      "key": false,
+      "essentialElement": true,
+      "isAmount": false,
+      "isQuantity": false,
+      "additionalInfo": "Status of the ticket: Open, In Progress, Resolved"
+    },
+    {
+      "entityName": "SupportTickets",
+      "name": "priority",
+      "type": "String(20)",
+      "key": false,
+      "essentialElement": true,
+      "isAmount": false,
+      "isQuantity": false,
+      "additionalInfo": "Priority of the ticket: Low, Medium, High"
+    },
+    {
+      "entityName": "SupportTickets",
+      "name": "createdAt",
+      "type": "DateTime",
+      "key": false,
+      "essentialElement": true,
+      "isAmount": false,
+      "isQuantity": false,
+      "additionalInfo": "Date and time when the ticket was created"
+    },
+    {
+      "entityName": "TicketResponses",
+      "name": "id",
+      "type": "String(50)",
+      "key": true,
+      "essentialElement": true,
+      "isAmount": false,
+      "isQuantity": false,
+      "additionalInfo": "Unique identifier for TicketResponse, semantic key to uniquely identify the instance"
+    },
+    {
+      "entityName": "TicketResponses",
+      "name": "message",
+      "type": "String(1000)",
+      "key": false,
+      "essentialElement": true,
+      "isAmount": false,
+      "isQuantity": false,
+      "additionalInfo": "Message content of the ticket response"
+    },
+    {
+      "entityName": "TicketResponses",
+      "name": "sentAt",
+      "type": "DateTime",
+      "key": false,
+      "essentialElement": true,
+      "isAmount": false,
+      "isQuantity": false,
+      "additionalInfo": "Date and time when the response was sent"
+    },
+    {
+      "entityName": "TicketResponses",
+      "name": "author",
+      "type": "String(100)",
+      "key": false,
+      "essentialElement": true,
+      "isAmount": false,
+      "isQuantity": false,
+      "additionalInfo": "Author of the ticket response"
+    },
+    {
+      "entityName": "TicketResponses",
+      "name": "supportTicketId",
+      "type": "String(50)",
+      "key": false,
+      "essentialElement": true,
+      "isAmount": false,
+      "isQuantity": false,
+      "additionalInfo": "Foreign key referencing the related SupportTicket"
+    }
+  ]
+}
+```
+2026-08-19T20:05:52.539Z [info] 
+==========LLM call for step "extractPropertyDetails":==========
+Here is a list of property names, each with the property description that was extracted from previous user input:
+
+SupportTickets_supportTicketsID: Unique identifier for SupportTicket, semantic key to uniquely identify the instance
+SupportTickets_title: Title of the support ticket
+SupportTickets_description: Detailed description of the support ticket
+SupportTickets_status: Status of the ticket: Open, In Progress, Resolved
+SupportTickets_priority: Priority of the ticket: Low, Medium, High
+SupportTickets_createdAt: Date and time when the ticket was created
+TicketResponses_ticketResponsesID: Unique identifier for TicketResponse, semantic key to uniquely identify the instance
+TicketResponses_message: Message content of the ticket response
+TicketResponses_sentAt: Date and time when the response was sent
+TicketResponses_author: Author of the ticket response
+TicketResponses_supportTicketId: Foreign key referencing the related SupportTicket
+
+For each property analyze the description with respect to what property values can be expected.
+
+You must format your output as a JSON value that adheres to a given "JSON Schema" instance.
+
+"JSON Schema" is a declarative language that allows you to annotate and validate JSON documents.
+
+For example, the example "JSON Schema" instance {{"properties": {{"foo": {{"description": "a list of test words", "type": "array", "items": {{"type": "string"}}}}}}, "required": ["foo"]}}
+would match an object with one required property, "foo". The "type" property specifies "foo" must be an "array", and the "description" property semantically describes it as "a list of test words". The items within "foo" must be strings.
+Thus, the object {{"foo": ["bar", "baz"]}} is a well-formatted instance of this example "JSON Schema". The object {{"properties": {{"foo": ["bar", "baz"]}}}} is not well-formatted.
+
+Your output will be parsed and type-checked according to the provided schema instance, so make sure all fields in your output match the schema exactly and there are no trailing commas!
+
+Here is the JSON Schema instance your output must adhere to. Include the enclosing markdown codeblock:
+```json
+{
+  "type": "object",
+  "properties": {
+    "properties": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "description": "camelCase for CAP and strict PascalCase for RAP, no spaces"
+          },
+          "hasFixedValuesList": {
+            "type": "boolean",
+            "description": "Only limited list of values expected, e.g. property is representing e.g. a type, status, category, unit, organization"
+          },
+          "values": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "Specific property values mentioned as part of the description. Those could be possible values or example values. Don't make up or invent any values"
+          },
+          "isAmount": {
+            "type": "boolean",
+            "description": "true if element has semantic type amount or price"
+          },
+          "isQuantity": {
+            "type": "boolean",
+            "description": "Set to true only if the element represents a measurable quantity that requires or can have a unit of measure (e.g., weight, length, duration). Do not use for simple integer counts"
+          }
+        },
+        "required": [
+          "name"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "properties"
+  ],
+  "additionalProperties": false
+}
+```
+
+Output ONLY the json contents and try to be as accurate as comprehensive as possible.
+
+----------Response:----------
+```json
+{
+  "properties": [
+    {
+      "name": "supportTicketsID",
+      "hasFixedValuesList": false,
+      "values": [],
+      "isAmount": false,
+      "isQuantity": false
+    },
+    {
+      "name": "title",
+      "hasFixedValuesList": false,
+      "values": [],
+      "isAmount": false,
+      "isQuantity": false
+    },
+    {
+      "name": "description",
+      "hasFixedValuesList": false,
+      "values": [],
+      "isAmount": false,
+      "isQuantity": false
+    },
+    {
+      "name": "status",
+      "hasFixedValuesList": true,
+      "values": [
+        "Open",
+        "In Progress",
+        "Resolved"
+      ],
+      "isAmount": false,
+      "isQuantity": false
+    },
+    {
+      "name": "priority",
+      "hasFixedValuesList": true,
+      "values": [
+        "Low",
+        "Medium",
+        "High"
+      ],
+      "isAmount": false,
+      "isQuantity": false
+    },
+    {
+      "name": "createdAt",
+      "hasFixedValuesList": false,
+      "values": [],
+      "isAmount": false,
+      "isQuantity": false
+    },
+    {
+      "name": "ticketResponsesID",
+      "hasFixedValuesList": false,
+      "values": [],
+      "isAmount": false,
+      "isQuantity": false
+    },
+    {
+      "name": "message",
+      "hasFixedValuesList": false,
+      "values": [],
+      "isAmount": false,
+      "isQuantity": false
+    },
+    {
+      "name": "sentAt",
+      "hasFixedValuesList": false,
+      "values": [],
+      "isAmount": false,
+      "isQuantity": false
+    },
+    {
+      "name": "author",
+      "hasFixedValuesList": false,
+      "values": [],
+      "isAmount": false,
+      "isQuantity": false
+    },
+    {
+      "name": "supportTicketId",
+      "hasFixedValuesList": false,
+      "values": [],
+      "isAmount": false,
+      "isQuantity": false
+    }
+  ]
+}
+```
+2026-08-19T20:05:52.539Z [info] Step "switchSimpleOrComplexApp": case 0 blocked! Evaluation details:
+ - JSONPath "$.model.applications[0].pages[2]" : []
+ - JSONPath "$.userInput.lineCount" : [9]
+2026-08-19T20:05:52.539Z [info] Step "switchSimpleOrComplexApp": no condition met - running default steps
+2026-08-19T20:05:52.539Z [info] Step "runFlowForComplexApp": workflow "givenSkeletonExtractComplexApp" started
+"
+2026-08-19T20:05:55.639Z [info] 
+==========LLM call for classifier:==========
+The user input below describes a Fiori Elements application with a ListReport page and multiple ObjectPages.
+ListReport page shows the data of the specific business object as a list or table. ObjectPage shows details of a specific business object instance.
+Your task is to classify the lines based on the same business object representation to the following categories, one line can refer only to a single category:
+ - LIST_REPORT_SUPPORTTICKETS: line describes the ListReport page for "SupportTickets"
+ - OBJECT_PAGE_SUPPORTTICKETS: line describes the ObjectPage for "SupportTickets" with a table of "TicketResponses"
+ - NONE: line is not describing any ListReport page or ObjectPage
+
+Return your findings as csv file with columns "lineContent" and "category"!
+
+<UserInput>
+Generate a draft-enabled SAP Fiori elements application for a Customer Support Ticket system.
+
+Entities:
+1. SupportTicket: title, description, status (Open, In Progress, Resolved),
+ priority (Low, Medium, High), createdAt.
+2. TicketResponse: message, sentAt, author.
+Establish a 1-to-many relationship between SupportTicket and TicketResponse.
+
+Generate a List Report Page for SupportTicket with an Object Page showing related TicketResponses.
+</UserInput>
+
+----------Response:----------
+```csv
+lineContent,category
+"Generate a draft-enabled SAP Fiori elements application for a Customer Support Ticket system.",NONE
+"Entities:",NONE
+"1. SupportTicket: title, description, status (Open, In Progress, Resolved), priority (Low, Medium, High), createdAt.",NONE
+"2. TicketResponse: message, sentAt, author.",NONE
+"Establish a 1-to-many relationship between SupportTicket and TicketResponse.",NONE
+"Generate a List Report Page for SupportTicket with an Object Page showing related TicketResponses.",LIST_REPORT_SUPPORTTICKETS
+```
+2026-08-19T20:05:55.639Z [info] Step "loopOverPages": looping over 2 entries
+"
+2026-08-19T20:05:55.640Z [info] Step "loopOverPages" index 0: pageType=ListReport, entityType=SupportTickets
+2026-08-19T20:05:55.640Z [info] Step "ifListReportPage": case 0 passed! Evaluation details:
+ - Variable "pageType" : "ListReport"
+2026-08-19T20:05:58.890Z [info] 
+==========LLM call for step "extractListReport":==========
+A Fiori Elements Application has the following pages:
+ - ListReport page for "SupportTickets"
+ - ObjectPage for "SupportTickets"
+
+Available entities with their associations and elements are:
+Entity "SupportTickets"
+   Properties:
+       supportTicketsID: Unique identifier for SupportTicket, semantic key to uniquely identify the instance
+       title: Title of the support ticket
+       description: Detailed description of the support ticket
+       status: Status of the ticket: Open, In Progress, Resolved
+       priority: Priority of the ticket: Low, Medium, High
+       createdAt: Date and time when the ticket was created
+   Associations:
+       TicketResponses: association to many entities TicketResponses
+Entity "TicketResponses"
+   Properties:
+       ticketResponsesID: Unique identifier for TicketResponse, semantic key to uniquely identify the instance
+       message: Message content of the ticket response
+       sentAt: Date and time when the response was sent
+       author: Author of the ticket response
+       supportTicketId: Foreign key referencing the related SupportTicket
+   Associations:
+       supportTickets: association to single entity SupportTickets
+
+The user input below describes the details of the ListReport page (i.e. its filters, tables or views with their columns).
+
+Your task is to help the user defining the ListReport page.
+
+You must format your output as a JSON value that adheres to a given "JSON Schema" instance.
+
+"JSON Schema" is a declarative language that allows you to annotate and validate JSON documents.
+
+For example, the example "JSON Schema" instance {{"properties": {{"foo": {{"description": "a list of test words", "type": "array", "items": {{"type": "string"}}}}}}, "required": ["foo"]}}
+would match an object with one required property, "foo". The "type" property specifies "foo" must be an "array", and the "description" property semantically describes it as "a list of test words". The items within "foo" must be strings.
+Thus, the object {{"foo": ["bar", "baz"]}} is a well-formatted instance of this example "JSON Schema". The object {{"properties": {{"foo": ["bar", "baz"]}}}} is not well-formatted.
+
+Your output will be parsed and type-checked according to the provided schema instance, so make sure all fields in your output match the schema exactly and there are no trailing commas!
+
+Here is the JSON Schema instance your output must adhere to. Include the enclosing markdown codeblock:
+```json
+{
+  "type": "object",
+  "properties": {
+    "loadDataOnAppLaunch": {
+      "type": "string",
+      "enum": [
+        "Auto",
+        "Disabled",
+        "Enabled"
+      ],
+      "description": "'Auto': no explicit user input to load the data after start or an explicit user input to set InitialLoad for table to Auto; 'Disabled': An initial load of data does not occur at app start and the user has to actively click the Go button;  'Enabled': An initial load of data occurs automatically after start  (list is visible without pressing the GO Button)."
+    },
+    "tables": {
+      "type": "array",
+      "description": "tables (views) expected in user input",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "baseEntityType": {
+            "type": "string",
+            "description": "base entity type for the table"
+          },
+          "columns": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "propertyPaths for columns"
+          }
+        },
+        "required": [
+          "title",
+          "baseEntityType",
+          "columns"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "filters": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "propertyPaths for filters specified in user input. If not specified, empty array"
+    }
+  },
+  "required": [
+    "tables"
+  ],
+  "additionalProperties": false
+}
+```
+
+Output ONLY the json contents and try to be as accurate as comprehensive as possible.
+
+<UserInput>
+Generate a draft-enabled SAP Fiori elements application for a Customer Support Ticket system.
+Entities:
+"1. SupportTicket: title, description, status (Open, In Progress, Resolved), priority (Low, Medium, High), createdAt."
+"2. TicketResponse: message, sentAt, author."
+Establish a 1-to-many relationship between SupportTicket and TicketResponse.
+Generate a List Report Page for SupportTicket with an Object Page showing related TicketResponses.
+</UserInput>
+
+----------Response:----------
+```json
+{
+  "loadDataOnAppLaunch": "Enabled",
+  "filters": [
+    "status",
+    "priority",
+    "createdAt"
+  ],
+  "tables": [
+    {
+      "title": "Support Tickets",
+      "id": "SupportTicketsTable",
+      "baseEntityType": "SupportTickets",
+      "columns": [
+        "supportTicketsID",
+        "title",
+        "status",
+        "priority",
+        "createdAt"
+      ]
+    }
+  ]
+}
+```
+2026-08-19T20:05:58.891Z [info] Step "loopOverPages" index 1: pageType=ObjectPage, entityType=SupportTickets
+2026-08-19T20:05:58.891Z [info] Step "ifListReportPage": case 0 blocked! Evaluation details:
+ - Variable "pageType" : "ObjectPage"
+2026-08-19T20:05:58.891Z [info] Step "ifListReportPage": no condition met - running default steps
+2026-08-19T20:06:03.616Z [info] 
+==========LLM call for step "extractSingleObjectPageOfMany":==========
+The user input below describes a Fiori Elements Application with the following pages:
+ - ListReport page for "SupportTickets"
+ - ObjectPage for "SupportTickets"
+
+Your task is to find the details of the ObjectPage for "SupportTickets".
+The base entity of the ObjectPage is SupportTickets.
+This ObjectPage can contain tabs and/or sections which in turn contain tables and fields.
+It must contain table sections containing data for associated entity "TicketResponses" (via association TicketResponses);
+
+The underlying data model allows the following propertyPaths:
+ - supportTicketsID: Id (of Ticket)
+ - title: Title (of Ticket)
+ - description: Description (of Ticket)
+ - status: Status (of Ticket)
+ - priority: Priority (of Ticket)
+ - createdAt: Created At (of Ticket)
+ - TicketResponses/ticketResponsesID: Id (of many associated Response)
+ - TicketResponses/message: Message (of many associated Response)
+ - TicketResponses/sentAt: Sent At (of many associated Response)
+ - TicketResponses/author: Author (of many associated Response)
+ - TicketResponses/supportTicketId: Support Ticket Id (of many associated Response)
+
+You must format your output as a JSON value that adheres to a given "JSON Schema" instance.
+
+"JSON Schema" is a declarative language that allows you to annotate and validate JSON documents.
+
+For example, the example "JSON Schema" instance {{"properties": {{"foo": {{"description": "a list of test words", "type": "array", "items": {{"type": "string"}}}}}}, "required": ["foo"]}}
+would match an object with one required property, "foo". The "type" property specifies "foo" must be an "array", and the "description" property semantically describes it as "a list of test words". The items within "foo" must be strings.
+Thus, the object {{"foo": ["bar", "baz"]}} is a well-formatted instance of this example "JSON Schema". The object {{"properties": {{"foo": ["bar", "baz"]}}}} is not well-formatted.
+
+Your output will be parsed and type-checked according to the provided schema instance, so make sure all fields in your output match the schema exactly and there are no trailing commas!
+
+Here is the JSON Schema instance your output must adhere to. Include the enclosing markdown codeblock:
+```json
+{
+  "type": "object",
+  "properties": {
+    "sections": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "isTableSection": {
+            "type": "boolean",
+            "description": "if true, 'fields' represent columns of the table section and propertyPaths need to start with 1:n association"
+          },
+          "fields": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "propertyPath"
+          }
+        },
+        "required": [
+          "title",
+          "id",
+          "fields"
+        ],
+        "additionalProperties": false
+      }
+    },
+    "tabs": {
+      "type": "array",
+      "items": {
+        "type": "object",
+        "properties": {
+          "title": {
+            "type": "string"
+          },
+          "id": {
+            "type": "string"
+          },
+          "subsections": {
+            "type": "array",
+            "items": {
+              "type": "string"
+            },
+            "description": "list of sections ids relevant for the tab"
+          }
+        },
+        "required": [
+          "title",
+          "id",
+          "subsections"
+        ],
+        "additionalProperties": false
+      }
+    }
+  },
+  "required": [
+    "sections",
+    "tabs"
+  ],
+  "additionalProperties": false
+}
+```
+
+Output ONLY the json contents and try to be as accurate as comprehensive as possible.
+
+<UserInput>
+Generate a draft-enabled SAP Fiori elements application for a Customer Support Ticket system.
+
+Entities:
+1. SupportTicket: title, description, status (Open, In Progress, Resolved),
+ priority (Low, Medium, High), createdAt.
+2. TicketResponse: message, sentAt, author.
+Establish a 1-to-many relationship between SupportTicket and TicketResponse.
+
+Generate a List Report Page for SupportTicket with an Object Page showing related TicketResponses.
+</UserInput>
+
+----------Response:----------
+```json
+{
+  "sections": [
+    {
+      "title": "Support Ticket Details",
+      "id": "supportTicketDetails",
+      "fields": [
+        "title",
+        "description",
+        "status",
+        "priority",
+        "createdAt"
+      ]
+    },
+    {
+      "title": "Ticket Responses",
+      "id": "ticketResponsesSection",
+      "isTableSection": true,
+      "fields": [
+        "TicketResponses/ticketResponsesID",
+        "TicketResponses/message",
+        "TicketResponses/sentAt",
+        "TicketResponses/author"
+      ]
+    }
+  ],
+  "tabs": [
+    {
+      "title": "Details",
+      "id": "detailsTab",
+      "subsections": [
+        "supportTicketDetails"
+      ]
+    },
+    {
+      "title": "Responses",
+      "id": "responsesTab",
+      "subsections": [
+        "ticketResponsesSection"
+      ]
+    }
+  ]
+}
+```
+2026-08-19T20:06:03.617Z [info] Step "ifCodeListsPresent": case 0 blocked! Evaluation details:
+ - JSONPath "$.model.entities[*].elements[*].values[*]" : []
+2026-08-19T20:06:03.618Z [info] 2/8: Build CDS files
+2026-08-19T20:06:03.640Z [info] 3/8: Checking staging project root folder "&#x2F;home&#x2F;user&#x2F;projects&#x2F;SupportTicketApp"
+2026-08-19T20:06:03.694Z [info] 4/8: Generating mock data
+2026-08-19T20:06:14.506Z [info] 
+==========LLM call for data generation:==========
+
+For the following list of entities, create data for the empty CSV files.
+Entity "SupportTickets" - Properties:
+    supportTicketsID: String(50), Unique identifier for SupportTicket, semantic key to uniquely identify the instance
+    title: String(100), Title of the support ticket
+    description: String(255), Detailed description of the support ticket
+    status: String(20), Status of the ticket: Open, In Progress, Resolved
+    priority: String(20), Priority of the ticket: Low, Medium, High
+    createdAt: DateTime, Date and time when the ticket was created
+
+Entity "TicketResponses" - Properties:
+    ticketResponsesID: String(50), Unique identifier for TicketResponse, semantic key to uniquely identify the instance
+    message: String(255), Message content of the ticket response
+    sentAt: DateTime, Date and time when the response was sent
+    author: String(100), Author of the ticket response
+    supportTicketId: String(50), Foreign key referencing the related SupportTicket
+    supportTickets_supportTicketsID: String(50), supportTicketsID of associated SupportTickets
+
+Empty CSV files in json format (only generate content for these files!):
+{"SupportTickets.csv":"supportTicketsID;title;description;status;priority;createdAt","TicketResponses.csv":"ticketResponsesID;message;sentAt;author;supportTicketId;supportTickets_supportTicketsID"}
+
+Rules:
+    - Take over the given header line, do not invent new columns!
+    - For a given file, add rows, add '\n' characters before each row but don't break the JSON string
+    - Do not generate rows with same key values, they must be unique!
+    - Make sure that associations match, i.e. a field containing "Name of the associated Customer" must contain an existing Name of entity Customer
+    - Always use ";" as a delimiter in CSV files
+    - The result must be proper JSON format so it can be parsed, don't break JSON strings within, don't add quotes around values.
+    - Create exactly 10 rows (data records) for EACH csv file (do NOT count the header line as a row)
+    - All values must be realistic with meaningful content, e.g. 'Laptop Screen' and not just placeholder values with incremented numbers like 'Product 1', 'Product 2' etc.
+
+Use format for values:
+  String(50): string no longer than 50 characters
+  DateTime: 2021-06-27T14:52:23Z
+
+
+Example output (Do NOT include in output!):
+```json
+{"Blogs":"blogID;title;description;createdDateTime;views\nBlog1;Tech Blog;A blog about the latest technology trends.;2023-06-27T14:52:23Z;1000\nBlog2;Fashion Blog;Explore the world of fashion and style.;2023-06-27T14:52:23Z;500","Posts":"postID;title;content;publishDate;likes;comments;blogID\n1;The Future of Artificial Intelligence;Artificial intelligence is shaping the future of technology.;2023-06-27;50;10;Blog1
+2;Summer Fashion Trends;Discover the hottest fashion trends for the summer season.;2023-06-27;100;20;Blog2\n3;Must-Have Accessories;10 must-have accessories for the upcoming season;2023-06-27;100;20;Blog2"}
+```
+Output ONLY the json contents for the csv files and try to be as accurate as possible.
+
+
+
+----------Response:----------
+```json
+{"SupportTickets.csv":"supportTicketsID;title;description;status;priority;createdAt\nST001;Cannot access email;User reports inability to access email account since yesterday;Open;High;2024-06-20T09:15:00Z\nST002;Software installation failure;Installation of accounting software fails with error code 503;In Progress;Medium;2024-06-19T14:30:00Z\nST003;Printer not working;Office printer is not responding to print commands;Open;Low;2024-06-21T08:45:00Z\nST004;Password reset request;User forgot password and needs reset assistance;Resolved;High;2024-06-18T11:00:00Z\nST005;Network connectivity issues;Intermittent network drops affecting multiple users;In Progress;High;2024-06-20T13:20:00Z\nST006;Application crash on startup;Finance app crashes immediately after launch;Open;Medium;2024-06-21T10:05:00Z\nST007;Slow computer performance;User reports slow response times on workstation;Resolved;Low;2024-06-17T16:40:00Z\nST008;Email spam filtering not working;Spam emails are not being filtered properly;In Progress;Medium;2024-06-19T09:50:00Z\nST009;VPN connection failure;Unable to establish VPN connection from home;Open;High;2024-06-21T07:30:00Z\nST010;Data backup failed;Scheduled backup did not complete successfully last night;Resolved;High;2024-06-18T22:15:00Z","TicketResponses.csv":"ticketResponsesID;message;sentAt;author;supportTicketId;supportTickets_supportTicketsID\nTR001;We are looking into the email access issue.;2024-06-20T10:00:00Z;IT Support Team;ST001;ST001\nTR002;Please provide the exact error message you received.;2024-06-19T15:00:00Z;Software Support;ST002;ST002\nTR003;Have you tried restarting the printer?;2024-06-21T09:00:00Z;Helpdesk Agent;ST003;ST003\nTR004;Password has been reset, please check your email.;2024-06-18T11:30:00Z;IT Admin;ST004;ST004\nTR005;Network team is investigating the connectivity drops.;2024-06-20T14:00:00Z;Network Engineer;ST005;ST005\nTR006;Please update the app to the latest version and try again.;2024-06-21T10:30:00Z;App Support;ST006;ST006\nTR007;We optimized your system settings to improve performance.;2024-06-17T17:00:00Z;Tech Specialist;ST007;ST007\nTR008;Spam filter rules have been updated to block unwanted emails.;2024-06-19T10:15:00Z;Email Admin;ST008;ST008\nTR009;VPN server is currently down, working on a fix.;2024-06-21T08:00:00Z;Network Support;ST009;ST009\nTR010;Backup process was restarted and completed successfully.;2024-06-19T00:00:00Z;Backup Admin;ST010;ST010"}
+```
+2026-08-19T20:06:14.508Z [info] 5/8: Initializing CAP project
+2026-08-19T20:06:15.089Z [info] 6/8: Copying files to CAP project
+2026-08-19T20:06:15.144Z [info] 7/8: Generating applications
+2026-08-19T20:06:21.507Z [info] 8/8: Installing node module dependencies
